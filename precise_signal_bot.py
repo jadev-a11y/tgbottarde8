@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 """
 ULTIMATE PROFESSIONAL TELEGRAM TRADING SIGNAL BOT
 100 COMPLETE TRADING STRATEGIES WITH ADVANCED ANALYSIS
@@ -4012,12 +4014,39 @@ Rahmat! Sizga yordam berishdan mamnunmiz."""
             logger.error(f"Failed to send spam reminder: {e}")
             # If sending reminder fails, don't crash the bot
 
+# Health check for Render
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/health':
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(b'{"status": "healthy", "service": "telegram-bot"}')
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def log_message(self, format, *args):
+        # Suppress HTTP server logs
+        pass
+
+def start_health_server():
+    """Start health check server for Render"""
+    port = int(os.environ.get('PORT', 10000))
+    server = HTTPServer(('0.0.0.0', port), HealthHandler)
+    logger.info(f"🏥 Health server starting on port {port}")
+    server.serve_forever()
+
 def main():
     """Main function to run the Ultimate Trading Bot with crash protection"""
     try:
         logger.info("🚀 Initializing PROFESSIONAL TRADING BOT...")
 
         bot = UltimateTradingBot()
+
+        # Start health check server for Render in background thread
+        health_thread = threading.Thread(target=start_health_server, daemon=True)
+        health_thread.start()
 
         # Enhanced application builder with better timeouts and connection pooling
         application = (Application.builder()
