@@ -392,8 +392,8 @@ MAKSIMAL BATAFSIL VA PROFESSIONAL JAVOB BERING! Barcha web search natijalarini i
                 tp = round(current_price * 1.015, 5)  # 1.5% TP
                 sl = round(current_price * 0.992, 5)  # 0.8% SL
             elif signal in ['SELL', 'STRONG_SELL']:
-            tp = round(current_price * 0.985, 5)  # 1.5% TP
-            sl = round(current_price * 1.008, 5)  # 0.8% SL
+                tp = round(current_price * 0.985, 5)  # 1.5% TP
+                sl = round(current_price * 1.008, 5)  # 0.8% SL
         else:
             tp = current_price
             sl = current_price
