@@ -514,6 +514,8 @@ def main():
 
     # Botni ishga tushirish
     logger.info("🤖 Simple Trading Bot started!")
+    logger.info(f"Bot token: {token[:20]}...")
+    logger.info(f"OpenAI key available: {bool(os.getenv('OPENAI_API_KEY'))}")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':

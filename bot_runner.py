@@ -22,7 +22,7 @@ def kill_existing_bots():
                 continue
 
             cmdline = ' '.join(proc.info['cmdline'] or [])
-            if any(keyword in cmdline for keyword in ['precise_signal_bot', 'simple_bot', 'bot_runner']):
+            if any(keyword in cmdline for keyword in ['precise_signal_bot', 'simple_bot', 'bot_runner', 'python3 bot_runner', 'python bot_runner', 'telegram']):
                 logger.info(f"Killing existing bot process: {proc.info['pid']}")
                 proc.kill()
                 killed_count += 1
