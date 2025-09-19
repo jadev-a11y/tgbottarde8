@@ -1201,7 +1201,7 @@ Savdo signallari xizmatiga xush kelibsiz!
                     rates.append(current_rate)  # Add current rate
                     dates.append(datetime.now())
 
-                    df_data = pd.DataFrame(index=dates)
+                    df_data = Dict(index=dates)
                     df_data['close'] = rates
 
                     # Generate realistic OHLC from close prices
@@ -1249,8 +1249,8 @@ Savdo signallari xizmatiga xush kelibsiz!
 
                             historical_rates.append(current_rate)
 
-                            dates = pd.date_range(end=pd.Timestamp.now(), periods=len(historical_rates), freq='D')
-                            df_data = pd.DataFrame({
+                            dates = datetime(end=datetime.now(), periods=len(historical_rates), freq='D')
+                            df_data = Dict({
                                 'close': historical_rates,
                                 'open': historical_rates,
                                 'high': [r * 1.001 for r in historical_rates],
@@ -1305,10 +1305,10 @@ Savdo signallari xizmatiga xush kelibsiz!
 
             # Try 3: Generate realistic demo data if all fails
             base_rate = 1.0850 if 'EUR' in symbol_clean else 1.2500
-            dates = pd.date_range(end=pd.Timestamp.now(), periods=30, freq='D')
+            dates = datetime(end=datetime.now(), periods=30, freq='D')
             closes = [base_rate * (1 + random.random.normal(0, 0.002)) for _ in range(30)]
 
-            demo_data = pd.DataFrame({
+            demo_data = Dict({
                 'open': [c * (1 + random.random.uniform(-0.001, 0.001)) for c in closes],
                 'high': [c * 1.002 for c in closes],
                 'low': [c * 0.998 for c in closes],
@@ -1321,8 +1321,8 @@ Savdo signallari xizmatiga xush kelibsiz!
         except Exception as e:
             logger.error(f"Market data error: {e}")
             # Return basic demo data
-            dates = pd.date_range(end=pd.Timestamp.now(), periods=3, freq='D')
-            demo_data = pd.DataFrame({
+            dates = datetime(end=datetime.now(), periods=3, freq='D')
+            demo_data = Dict({
                 'open': [1.0850, 1.0860, 1.0855],
                 'high': [1.0870, 1.0875, 1.0865],
                 'low': [1.0840, 1.0850, 1.0845],
@@ -1662,7 +1662,7 @@ Hurmatli {username}, professional tahlil muvaffaqiyatli tugallandi!
         except Exception as e:
             logger.error(f"Dynamic animation error: {e}")
 
-    async def get_enhanced_market_data(self, symbol: str) -> Tuple[bool, str, pd.DataFrame]:
+    async def get_enhanced_market_data(self, symbol: str) -> Tuple[bool, str, Dict]:
         """Enhanced market data retrieval with multiple sources"""
         try:
             # Try primary market data provider
@@ -1677,9 +1677,9 @@ Hurmatli {username}, professional tahlil muvaffaqiyatli tugallandi!
 
         except Exception as e:
             logger.error(f"Enhanced market data error: {e}")
-            return False, "", pd.DataFrame()
+            return False, "", Dict()
 
-    async def perform_advanced_strategy_analysis(self, data: pd.DataFrame, symbol: str, data_source: str, username: str) -> Dict:
+    async def perform_advanced_strategy_analysis(self, data: Dict, symbol: str, data_source: str, username: str) -> Dict:
         """
         Advanced Strategy Analysis with Real-Time Data
         Uses multiple indicators and real-time market data for precision
@@ -1722,7 +1722,7 @@ Kamida 14 kunlik ma'lumot kerak.
             logger.error(f"Advanced strategy analysis error: {e}")
             return {'error': f"Tahlil xatosi: {str(e)}"}
 
-    async def apply_single_strategy(self, strategy_name: str, data: pd.DataFrame, current_price: float, prev_price: float) -> Dict:
+    async def apply_single_strategy(self, strategy_name: str, data: Dict, current_price: float, prev_price: float) -> Dict:
         """Apply a single strategy and return result"""
         try:
             if strategy_name == "Trend Analysis":
@@ -1846,7 +1846,7 @@ Kamida 14 kunlik ma'lumot kerak.
             logger.error(f"Format results error: {e}")
             return f"❌ Natijalarni ko'rsatishda xatolik: {str(e)}"
 
-    async def calculate_all_technical_indicators(self, data: pd.DataFrame) -> Dict:
+    async def calculate_all_technical_indicators(self, data: Dict) -> Dict:
         """Calculate comprehensive technical indicators (60+ indicators)"""
         try:
             indicators = {}
@@ -1958,7 +1958,7 @@ Kamida 14 kunlik ma'lumot kerak.
             logger.error(f"Technical indicators calculation error: {e}")
             return {}
 
-    async def execute_100_strategies(self, data: pd.DataFrame, indicators: Dict, symbol: str) -> List[StrategyResult]:
+    async def execute_100_strategies(self, data: Dict, indicators: Dict, symbol: str) -> List[StrategyResult]:
         """Execute all 100 trading strategies and return results"""
         try:
             strategy_results = []
@@ -1989,7 +1989,7 @@ Kamida 14 kunlik ma'lumot kerak.
             logger.error(f"100 strategies execution error: {e}")
             return []
 
-    async def execute_strategy_category(self, strategies: List[str], data: pd.DataFrame,
+    async def execute_strategy_category(self, strategies: List[str], data: Dict,
                                        indicators: Dict, symbol: str, category: str) -> List[StrategyResult]:
         """Execute a category of strategies"""
         try:
@@ -2026,7 +2026,7 @@ Kamida 14 kunlik ma'lumot kerak.
             logger.error(f"Strategy category {category} execution error: {e}")
             return []
 
-    async def execute_individual_strategy(self, strategy_name: str, data: pd.DataFrame,
+    async def execute_individual_strategy(self, strategy_name: str, data: Dict,
                                         indicators: Dict, symbol: str) -> StrategyResult:
         """Execute individual strategy with specific logic"""
         try:
@@ -2075,7 +2075,7 @@ Kamida 14 kunlik ma'lumot kerak.
             )
 
     # Strategy implementation methods (simplified for space)
-    async def smart_money_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def smart_money_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         """Smart Money and Institutional strategy logic"""
         try:
             close = data['close'].values
@@ -2149,16 +2149,16 @@ Kamida 14 kunlik ma'lumot kerak.
     # Additional strategy methods would continue here...
     # For brevity, I'll provide template methods for the remaining categories
 
-    async def order_flow_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def order_flow_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         """Order Flow strategy implementation"""
         # Implementation for order flow strategies
         return self.create_sample_result(name, "Order Flow analysis")
 
-    async def market_structure_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def market_structure_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         """Market Structure strategy implementation"""
         return self.create_sample_result(name, "Market Structure break analysis")
 
-    async def trend_following_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def trend_following_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         """Trend Following strategy implementation"""
         try:
             sma_20 = indicators.get('sma_20', random.array([]))
@@ -2202,7 +2202,7 @@ Kamida 14 kunlik ma'lumot kerak.
         except Exception as e:
             return self.create_error_result(name, str(e))
 
-    async def mean_reversion_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def mean_reversion_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         """Mean Reversion strategy implementation"""
         try:
             rsi = indicators.get('rsi', random.array([]))
@@ -2254,34 +2254,34 @@ Kamida 14 kunlik ma'lumot kerak.
             return self.create_error_result(name, str(e))
 
     # Template methods for remaining strategies
-    async def momentum_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def momentum_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         return self.create_sample_result(name, "Momentum analysis", random.choice(["BUY", "SELL", "NEUTRAL"]))
 
-    async def volatility_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def volatility_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         return self.create_sample_result(name, "Volatility breakout analysis", random.choice(["BUY", "SELL", "NEUTRAL"]))
 
-    async def support_resistance_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def support_resistance_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         return self.create_sample_result(name, "S/R level analysis", random.choice(["BUY", "SELL", "NEUTRAL"]))
 
-    async def ai_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def ai_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         return self.create_sample_result(name, "AI pattern recognition", random.choice(["BUY", "SELL", "NEUTRAL"]))
 
-    async def arbitrage_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def arbitrage_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         return self.create_sample_result(name, "Arbitrage opportunity", "NEUTRAL")
 
-    async def scalping_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def scalping_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         return self.create_sample_result(name, "Scalping signal", random.choice(["BUY", "SELL", "NEUTRAL"]))
 
-    async def elliott_wave_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def elliott_wave_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         return self.create_sample_result(name, "Elliott Wave pattern", random.choice(["BUY", "SELL", "NEUTRAL"]))
 
-    async def grid_martingale_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def grid_martingale_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         return self.create_sample_result(name, "Grid/Martingale level", random.choice(["BUY", "SELL", "NEUTRAL"]))
 
-    async def hft_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def hft_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         return self.create_sample_result(name, "HFT micro signal", random.choice(["BUY", "SELL", "NEUTRAL"]))
 
-    async def generic_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
+    async def generic_strategy(self, name: str, data: Dict, indicators: Dict) -> StrategyResult:
         return self.create_sample_result(name, "Generic technical analysis", random.choice(["BUY", "SELL", "NEUTRAL"]))
 
     def create_sample_result(self, name: str, analysis_type: str, signal: str = "NEUTRAL") -> StrategyResult:
@@ -2446,7 +2446,7 @@ Kamida 14 kunlik ma'lumot kerak.
                 'strategy_agreement': 0
             }
 
-    def calculate_comprehensive_price_ranges(self, data: pd.DataFrame) -> Dict:
+    def calculate_comprehensive_price_ranges(self, data: Dict) -> Dict:
         """Calculate comprehensive price ranges for multiple timeframes"""
         try:
             ranges = {}
@@ -2550,7 +2550,7 @@ Kamida 14 kunlik ma'lumot kerak.
             logger.error(f"Precision targets calculation error: {e}")
             return {'direction': 'NEUTRAL'}
 
-    def calculate_institutional_risk_assessment(self, data: pd.DataFrame, indicators: Dict, signal_direction: str) -> Dict:
+    def calculate_institutional_risk_assessment(self, data: Dict, indicators: Dict, signal_direction: str) -> Dict:
         """Calculate institutional-level risk assessment"""
         try:
             risk_data = {}
@@ -2617,7 +2617,7 @@ Kamida 14 kunlik ma'lumot kerak.
             logger.error(f"Risk assessment error: {e}")
             return {}
 
-    def analyze_institutional_market_context(self, data: pd.DataFrame, indicators: Dict) -> Dict:
+    def analyze_institutional_market_context(self, data: Dict, indicators: Dict) -> Dict:
         """Analyze market context like institutional traders"""
         try:
             context = {}
