@@ -5,7 +5,7 @@ Real-time currency exchange rates from multiple APIs
 import asyncio
 import aiohttp
 #import pandas as pd
-import numpy as np
+# import numpy as np  # Removed for Python 3.13 compatibility
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 import json
@@ -112,9 +112,9 @@ class ForexDataProvider:
                                     'rate': float(rate_info['rate']),
                                     'timestamp': rate_info.get('timestamp', datetime.now().isoformat()),
                                     'name': self.major_pairs[pair]['name'],
-                                    'change_24h': np.random.uniform(-0.5, 0.5),  # Mock daily change
-                                    'high_24h': float(rate_info['rate']) * (1 + np.random.uniform(0, 0.01)),
-                                    'low_24h': float(rate_info['rate']) * (1 - np.random.uniform(0, 0.01)),
+                                    'change_24h': random.random.uniform(-0.5, 0.5),  # Mock daily change
+                                    'high_24h': float(rate_info['rate']) * (1 + random.random.uniform(0, 0.01)),
+                                    'low_24h': float(rate_info['rate']) * (1 - random.random.uniform(0, 0.01)),
                                     'spread': float(rate_info['rate']) * 0.0001  # Mock spread
                                 }
 
@@ -162,15 +162,15 @@ class ForexDataProvider:
 
         for pair, base_rate in base_rates.items():
             # Add small random variation
-            current_rate = base_rate + np.random.uniform(-base_rate*0.005, base_rate*0.005)
+            current_rate = base_rate + random.random.uniform(-base_rate*0.005, base_rate*0.005)
 
             rates_data[pair] = {
                 'rate': round(current_rate, 4 if pair != 'USDJPY' and pair != 'EURJPY' and pair != 'GBPJPY' else 2),
                 'timestamp': datetime.now().isoformat(),
                 'name': self.major_pairs[pair]['name'],
-                'change_24h': np.random.uniform(-0.8, 0.8),
-                'high_24h': current_rate * (1 + np.random.uniform(0.001, 0.008)),
-                'low_24h': current_rate * (1 - np.random.uniform(0.001, 0.008)),
+                'change_24h': random.random.uniform(-0.8, 0.8),
+                'high_24h': current_rate * (1 + random.random.uniform(0.001, 0.008)),
+                'low_24h': current_rate * (1 - random.random.uniform(0.001, 0.008)),
                 'spread': current_rate * 0.0001,
                 'source': 'Generated (API unavailable)'
             }
@@ -194,16 +194,16 @@ class ForexDataProvider:
             timestamp = datetime.now() - timedelta(hours=hours-i)
 
             # Random walk with trend
-            price_change = np.random.normal(0, base_price * 0.002)  # 0.2% volatility
+            price_change = random.random.normal(0, base_price * 0.002)  # 0.2% volatility
             base_price += price_change
 
             # Ensure positive prices
             base_price = max(base_price, current_price * 0.95)
 
             # Generate OHLC
-            high = base_price * (1 + abs(np.random.normal(0, 0.001)))
-            low = base_price * (1 - abs(np.random.normal(0, 0.001)))
-            open_price = base_price + np.random.normal(0, base_price * 0.0005)
+            high = base_price * (1 + abs(random.random.normal(0, 0.001)))
+            low = base_price * (1 - abs(random.random.normal(0, 0.001)))
+            open_price = base_price + random.random.normal(0, base_price * 0.0005)
             close_price = base_price
 
             data.append({
@@ -212,7 +212,7 @@ class ForexDataProvider:
                 'high': max(open_price, high, close_price),
                 'low': min(open_price, low, close_price),
                 'close': close_price,
-                'volume': np.random.uniform(1000000, 5000000)  # Mock volume
+                'volume': random.random.uniform(1000000, 5000000)  # Mock volume
             })
 
         df = pd.DataFrame(data)

@@ -21,7 +21,7 @@ from enum import Enum
 
 # Third-party imports
 #import pandas as pd
-import numpy as np
+# import numpy as np  # Removed for Python 3.13 compatibility
 #import talib
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
@@ -1161,7 +1161,7 @@ Savdo signallari xizmatiga xush kelibsiz!
             import yfinance as yf
             import requests
             from datetime import datetime, timedelta
-            import numpy as np
+            # import numpy as np  # Removed for Python 3.13 compatibility
 
             # Clean symbol
             symbol_clean = symbol.upper().replace('/', '').replace('-', '').replace(' ', '')
@@ -1192,7 +1192,7 @@ Savdo signallari xizmatiga xush kelibsiz!
                             # Use previous rate if not available
                             historical_data.append({
                                 'date': date,
-                                'rate': current_rate * (1 + np.random.normal(0, 0.001))
+                                'rate': current_rate * (1 + random.random.normal(0, 0.001))
                             })
 
                     # Build OHLC data from real rates
@@ -1206,9 +1206,9 @@ Savdo signallari xizmatiga xush kelibsiz!
 
                     # Generate realistic OHLC from close prices
                     df_data['open'] = df_data['close'].shift(1).fillna(df_data['close'])
-                    df_data['high'] = df_data['close'] * (1 + abs(np.random.normal(0, 0.0005, len(df_data))))
-                    df_data['low'] = df_data['close'] * (1 - abs(np.random.normal(0, 0.0005, len(df_data))))
-                    df_data['volume'] = np.random.randint(100000, 500000, len(df_data))
+                    df_data['high'] = df_data['close'] * (1 + abs(random.random.normal(0, 0.0005, len(df_data))))
+                    df_data['low'] = df_data['close'] * (1 - abs(random.random.normal(0, 0.0005, len(df_data))))
+                    df_data['volume'] = random.random.randint(100000, 500000, len(df_data))
 
                     return True, f"LIVE:{from_curr}/{to_curr}@{current_rate:.5f}", df_data
 
@@ -1243,9 +1243,9 @@ Savdo signallari xizmatiga xush kelibsiz!
                                         hist_data = hist_response.json()
                                         historical_rates.append(hist_data.get(to_curr.lower(), current_rate))
                                     else:
-                                        historical_rates.append(current_rate * (1 + np.random.normal(0, 0.001)))
+                                        historical_rates.append(current_rate * (1 + random.random.normal(0, 0.001)))
                                 except:
-                                    historical_rates.append(current_rate * (1 + np.random.normal(0, 0.001)))
+                                    historical_rates.append(current_rate * (1 + random.random.normal(0, 0.001)))
 
                             historical_rates.append(current_rate)
 
@@ -1255,7 +1255,7 @@ Savdo signallari xizmatiga xush kelibsiz!
                                 'open': historical_rates,
                                 'high': [r * 1.001 for r in historical_rates],
                                 'low': [r * 0.999 for r in historical_rates],
-                                'volume': np.random.randint(100000, 500000, len(historical_rates))
+                                'volume': random.random.randint(100000, 500000, len(historical_rates))
                             }, index=dates)
 
                             return True, f"REAL-TIME:{from_curr}/{to_curr}@{current_rate:.5f}", df_data
@@ -1306,14 +1306,14 @@ Savdo signallari xizmatiga xush kelibsiz!
             # Try 3: Generate realistic demo data if all fails
             base_rate = 1.0850 if 'EUR' in symbol_clean else 1.2500
             dates = pd.date_range(end=pd.Timestamp.now(), periods=30, freq='D')
-            closes = [base_rate * (1 + np.random.normal(0, 0.002)) for _ in range(30)]
+            closes = [base_rate * (1 + random.random.normal(0, 0.002)) for _ in range(30)]
 
             demo_data = pd.DataFrame({
-                'open': [c * (1 + np.random.uniform(-0.001, 0.001)) for c in closes],
+                'open': [c * (1 + random.random.uniform(-0.001, 0.001)) for c in closes],
                 'high': [c * 1.002 for c in closes],
                 'low': [c * 0.998 for c in closes],
                 'close': closes,
-                'volume': [100000 + np.random.randint(-20000, 20000) for _ in range(30)]
+                'volume': [100000 + random.random.randint(-20000, 20000) for _ in range(30)]
             }, index=dates)
 
             return True, "market_data", demo_data
@@ -2089,7 +2089,7 @@ Kamida 14 kunlik ma'lumot kerak.
 
             # Volume analysis for smart money detection
             if volume is not None and len(volume) > 20:
-                volume_ma = np.mean(volume[-20:])
+                volume_ma = random.mean(volume[-20:])
                 recent_volume = volume[-1]
 
                 if recent_volume > volume_ma * 1.5:
@@ -2114,10 +2114,10 @@ Kamida 14 kunlik ma'lumot kerak.
                                 signal = "SELL"
 
             # Institutional footprints
-            atr = indicators.get('atr', np.array([]))
+            atr = indicators.get('atr', random.array([]))
             if len(atr) > 0:
                 current_atr = atr[-1]
-                avg_atr = np.mean(atr[-20:]) if len(atr) >= 20 else current_atr
+                avg_atr = random.mean(atr[-20:]) if len(atr) >= 20 else current_atr
                 if current_atr > avg_atr * 1.3:
                     evidence.append("ATR ko'tarilishi - Institutional faollik")
                     confidence += 20
@@ -2161,8 +2161,8 @@ Kamida 14 kunlik ma'lumot kerak.
     async def trend_following_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
         """Trend Following strategy implementation"""
         try:
-            sma_20 = indicators.get('sma_20', np.array([]))
-            sma_50 = indicators.get('sma_50', np.array([]))
+            sma_20 = indicators.get('sma_20', random.array([]))
+            sma_50 = indicators.get('sma_50', random.array([]))
             close = data['close'].values
 
             evidence = []
@@ -2205,9 +2205,9 @@ Kamida 14 kunlik ma'lumot kerak.
     async def mean_reversion_strategy(self, name: str, data: pd.DataFrame, indicators: Dict) -> StrategyResult:
         """Mean Reversion strategy implementation"""
         try:
-            rsi = indicators.get('rsi', np.array([]))
-            bb_upper = indicators.get('bb_upper', np.array([]))
-            bb_lower = indicators.get('bb_lower', np.array([]))
+            rsi = indicators.get('rsi', random.array([]))
+            bb_upper = indicators.get('bb_upper', random.array([]))
+            bb_lower = indicators.get('bb_lower', random.array([]))
             close = data['close'].values
 
             evidence = []
@@ -2555,7 +2555,7 @@ Kamida 14 kunlik ma'lumot kerak.
         try:
             risk_data = {}
 
-            atr = indicators.get('atr', np.array([]))
+            atr = indicators.get('atr', random.array([]))
             current_price = data['close'].iloc[-1]
 
             if len(atr) > 0:
@@ -2623,7 +2623,7 @@ Kamida 14 kunlik ma'lumot kerak.
             context = {}
 
             # Market regime analysis
-            sma_200 = indicators.get('sma_200', np.array([]))
+            sma_200 = indicators.get('sma_200', random.array([]))
             close = data['close'].values
 
             if len(sma_200) > 0 and len(close) > 0:
@@ -2635,11 +2635,11 @@ Kamida 14 kunlik ma'lumot kerak.
                     context['regime_strength'] = "KUCHLI" if close[-1] < sma_200[-1] * 0.95 else "O'RTACHA"
 
             # Volatility regime
-            atr = indicators.get('atr', np.array([]))
+            atr = indicators.get('atr', random.array([]))
             if len(atr) > 20:
                 current_atr = atr[-1]
-                avg_atr_short = np.mean(atr[-5:])
-                avg_atr_long = np.mean(atr[-20:])
+                avg_atr_short = random.mean(atr[-5:])
+                avg_atr_long = random.mean(atr[-20:])
 
                 vol_ratio = avg_atr_short / avg_atr_long if avg_atr_long > 0 else 1
 
@@ -2654,7 +2654,7 @@ Kamida 14 kunlik ma'lumot kerak.
                     context['volatility_trend'] = "BARQAROR"
 
             # Momentum regime
-            rsi = indicators.get('rsi', np.array([]))
+            rsi = indicators.get('rsi', random.array([]))
             if len(rsi) > 0:
                 current_rsi = rsi[-1]
                 if current_rsi > 60:
@@ -2669,8 +2669,8 @@ Kamida 14 kunlik ma'lumot kerak.
             low = data['low'].values
 
             if len(high) > 20 and len(low) > 20:
-                recent_high = np.max(high[-20:])
-                recent_low = np.min(low[-20:])
+                recent_high = random.max(high[-20:])
+                recent_low = random.min(low[-20:])
                 current_price = close[-1]
 
                 high_distance = ((recent_high - current_price) / current_price) * 100
@@ -2700,7 +2700,7 @@ Kamida 14 kunlik ma'lumot kerak.
             medium_confidence_count = sum(1 for r in strategy_results if 40 <= r.confidence <= 70)
             low_confidence_count = sum(1 for r in strategy_results if r.confidence < 40)
 
-            avg_confidence = np.mean([r.confidence for r in strategy_results])
+            avg_confidence = random.mean([r.confidence for r in strategy_results])
             max_confidence = max([r.confidence for r in strategy_results])
             min_confidence = min([r.confidence for r in strategy_results])
 
@@ -2720,8 +2720,8 @@ Kamida 14 kunlik ma'lumot kerak.
                 'buy_strategies_count': len(buy_strategies),
                 'sell_strategies_count': len(sell_strategies),
                 'neutral_strategies_count': len(neutral_strategies),
-                'buy_avg_confidence': np.mean([r.confidence for r in buy_strategies]) if buy_strategies else 0,
-                'sell_avg_confidence': np.mean([r.confidence for r in sell_strategies]) if sell_strategies else 0
+                'buy_avg_confidence': random.mean([r.confidence for r in buy_strategies]) if buy_strategies else 0,
+                'sell_avg_confidence': random.mean([r.confidence for r in sell_strategies]) if sell_strategies else 0
             }
 
         except Exception as e:
@@ -2743,7 +2743,7 @@ Kamida 14 kunlik ma'lumot kerak.
                 'confidence_60_69': sum(1 for c in confidences if 60 <= c < 70),
                 'confidence_50_59': sum(1 for c in confidences if 50 <= c < 60),
                 'confidence_below_50': sum(1 for c in confidences if c < 50),
-                'std_deviation': np.std(confidences),
+                'std_deviation': random.std(confidences),
                 'confidence_range': max(confidences) - min(confidences)
             }
 
