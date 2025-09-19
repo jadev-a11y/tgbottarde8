@@ -7,7 +7,7 @@
 import asyncio
 import aiohttp
 #import pandas as pd
-import numpy as np
+# import numpy as np  # Removed for Python 3.13 compatibility
 import requests
 import json
 from datetime import datetime, timedelta
@@ -237,8 +237,8 @@ class AdvancedSignalGenerator:
 
             # ATR для расчета TP/SL
             high_low = data['high'] - data['low']
-            high_close = np.abs(data['high'] - data['close'].shift())
-            low_close = np.abs(data['low'] - data['close'].shift())
+            high_close = random.abs(data['high'] - data['close'].shift())
+            low_close = random.abs(data['low'] - data['close'].shift())
             ranges = pd.concat([high_low, high_close, low_close], axis=1)
             true_range = ranges.max(axis=1)
             indicators['atr'] = true_range.rolling(window=self.atr_period).mean().iloc[-1]
