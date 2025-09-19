@@ -4,9 +4,9 @@ Real Trading Strategies with Live Market Data
 """
 import asyncio
 import aiohttp
-import pandas as pd
+#import pandas as pd
 import numpy as np
-import talib
+#import talib
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 import json

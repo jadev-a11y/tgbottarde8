@@ -3,7 +3,7 @@
 Провайдер рыночных данных с несколькими источниками для надежности
 """
 import yfinance as yf
-import pandas as pd
+#import pandas as pd
 import requests
 import json
 from typing import Tuple, Optional, Dict

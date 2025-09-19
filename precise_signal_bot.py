@@ -20,9 +20,9 @@ from dataclasses import dataclass
 from enum import Enum
 
 # Third-party imports
-import pandas as pd
+#import pandas as pd
 import numpy as np
-import talib
+#import talib
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 from telegram.constants import ParseMode

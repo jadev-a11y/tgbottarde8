@@ -4,11 +4,11 @@ Detailed signal analysis with news integration and comprehensive market data
 """
 import asyncio
 import aiohttp
-import pandas as pd
+#import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
-import talib
+#import talib
 import logging
 from bs4 import BeautifulSoup
 import json
