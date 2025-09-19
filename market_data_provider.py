@@ -3,7 +3,7 @@
 Провайдер рыночных данных с несколькими источниками для надежности
 """
 import yfinance as yf
-import pandas as pd
+# import pandas as pd  # Removed for Python 3.13 compatibility
 import requests
 import json
 from typing import Tuple, Optional, Dict
@@ -19,15 +19,15 @@ class MarketDataProvider:
         # Бесплатный ключ Alpha Vantage - демо ключ
         self.alpha_vantage_key = "demo"
 
-    def get_forex_data_av(self, from_currency: str, to_currency: str) -> Optional[pd.DataFrame]:
+    def get_forex_data_av(self, from_currency: str, to_currency: str) -> Optional[dict]:
         """Получить данные валютной пары через Alpha Vantage"""
         return None
 
-    def get_crypto_data_av(self, symbol: str) -> Optional[pd.DataFrame]:
+    def get_crypto_data_av(self, symbol: str) -> Optional[dict]:
         """Получить данные криптовалюты через Alpha Vantage"""
         return None
 
-    def get_free_forex_data(self, pair: str) -> Optional[pd.DataFrame]:
+    def get_free_forex_data(self, pair: str) -> Optional[dict]:
         """Получить данные через бесплатные API"""
         try:
             # Exchangerate API (бесплатный)
@@ -59,7 +59,7 @@ class MarketDataProvider:
                         })
 
                 if rates_data:
-                    df = pd.DataFrame(rates_data)
+                    df = dict(rates_data)
                     df['date'] = pd.to_datetime(df['date'])
                     df.set_index('date', inplace=True)
 
@@ -77,7 +77,7 @@ class MarketDataProvider:
 
         return None
 
-    async def get_market_data(self, pair: str) -> Tuple[bool, str, pd.DataFrame]:
+    async def get_market_data(self, pair: str) -> Tuple[bool, str, dict]:
         """Главный метод получения данных с fallback логикой"""
         try:
             pair_clean = pair.upper().replace('/', '').replace('-', '').replace(' ', '')
@@ -108,13 +108,13 @@ class MarketDataProvider:
                 if free_data is not None and not free_data.empty:
                     return True, f"free_api:{pair_clean}", free_data
 
-            return False, "", pd.DataFrame()
+            return False, "", dict()
 
         except Exception as e:
             logger.error(f"Market data error: {e}")
-            return False, "", pd.DataFrame()
+            return False, "", dict()
 
-    def _try_yfinance(self, pair_clean: str) -> Optional[pd.DataFrame]:
+    def _try_yfinance(self, pair_clean: str) -> Optional[dict]:
         """Попытка получить данные через yfinance"""
         try:
             # Маппинг символов для yfinance
