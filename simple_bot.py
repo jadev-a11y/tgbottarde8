@@ -74,7 +74,74 @@ class SimpleTradingBot:
             return None
 
     async def analyze_with_gpt_web_search(self, pair: str):
-        """GPT-4o-search-preview анализ как в мини приложении"""
+        """Прямой вызов Node.js trading API"""
+        try:
+            import subprocess
+            import json
+
+            # Простой вызов Node.js API
+            cmd = ['node', '-e', f'''
+const {{ analyzeSymbol }} = require('./trading_api.js');
+analyzeSymbol('{pair}').then(result => {{
+    console.log(JSON.stringify(result));
+}}).catch(err => {{
+    console.error('Error:', err.message);
+    process.exit(1);
+}});
+''']
+
+            env = os.environ.copy()
+            env['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY', '')
+
+            result = subprocess.run(
+                cmd,
+                cwd='/Users/jasur/Desktop/tradingbot/telegram_bot',
+                capture_output=True,
+                text=True,
+                env=env,
+                timeout=30
+            )
+
+            if result.returncode == 0 and result.stdout.strip():
+                return json.loads(result.stdout.strip())
+
+            logger.error(f"Node.js error: {result.stderr}")
+            return None
+
+        except Exception as e:
+            logger.error(f"API call error: {e}")
+            return None
+
+    def clean_gpt_response(self, text: str) -> str:
+        """Очистить GPT ответ от символов и ссылок"""
+        import re
+
+        # Убираем URLs
+        text = re.sub(r'https?://[^\s]+', '', text)
+        text = re.sub(r'www\.[^\s]+', '', text)
+
+        # Убираем markdown символы
+        text = re.sub(r'\*\*', '', text)
+        text = re.sub(r'\*', '', text)
+        text = re.sub(r'#{1,6}\s*', '', text)
+        text = re.sub(r'`', '', text)
+
+        # Убираем скобки с содержимым
+        text = re.sub(r'\[.*?\]', '', text)
+        text = re.sub(r'\(.*?\)', '', text)
+
+        # Убираем источники
+        text = re.sub(r'Source:.*?(?=\n|$)', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'According to.*?(?=\n|$)', '', text, flags=re.IGNORECASE)
+
+        # Очищаем лишние пробелы
+        text = re.sub(r'\s+', ' ', text)
+        text = text.strip()
+
+        return text
+
+    async def analyze_with_gpt_web_search_fallback(self, pair: str):
+        """Fallback GPT-4o-search-preview анализ"""
         try:
             # Get OpenAI API key
             openai_key = os.getenv('OPENAI_API_KEY')
@@ -336,105 +403,17 @@ MAKSIMAL BATAFSIL VA PROFESSIONAL JAVOB BERING! Barcha web search natijalarini i
 
     async def analyze_pair(self, update: Update, context: ContextTypes.DEFAULT_TYPE, pair: str):
         """Trading juftligi tahlili"""
-        await update.message.reply_text("⏳ Haqiqiy bozor ma'lumotlari olinmoqda...")
-
-        # Get real market data
-        current_price = await self.get_real_price(pair)
-        if current_price is None:
-            await update.message.reply_text("❌ Ma'lumot olishda xatolik. Keyinroq qayta urinib ko'ring.")
-            return
-
         await update.message.reply_text("📊 Professional bozor tahlili bajarilmoqda...")
 
-        # Get GPT-4o web search analysis
+        # Get GPT web search analysis
         analysis = await self.analyze_with_gpt_web_search(pair)
-        if analysis is None:
-            # Fallback to simple analysis if GPT fails
-            import random
-            rsi = random.randint(30, 70)
-            macd = "BULLISH" if rsi > 50 else "BEARISH"
 
-            if rsi < 35:
-                signal = 'BUY'
-                confidence = 75
-            elif rsi > 65:
-                signal = 'SELL'
-                confidence = 75
-            else:
-                signal = 'HOLD'
-                confidence = 60
-
-            analysis = {
-                'signal': signal,
-                'confidence': confidence,
-                'price': current_price,
-                'target': current_price * (1.01 if signal == 'BUY' else 0.99 if signal == 'SELL' else 1.0),
-                'stop': current_price * (0.995 if signal == 'BUY' else 1.005 if signal == 'SELL' else 1.0),
-                'reasoning': f'Texnik tahlil: RSI {rsi}, MACD {macd}. {pair} uchun {signal} tavsiya etiladi.',
-                'rsi': rsi,
-                'macd': macd,
-                'trend': 'UPTREND' if rsi > 50 else 'DOWNTREND'
-            }
-
-        # Map signals to emoji
-        signal_emoji = {
-            'STRONG_BUY': '🟢🟢',
-            'BUY': '🟢',
-            'NEUTRAL': '🟡',
-            'SELL': '🔴',
-            'STRONG_SELL': '🔴🔴'
-        }
-
-        # Use analysis targets or calculate defaults
-        signal = analysis['signal']
-        tp = analysis.get('target', current_price)
-        sl = analysis.get('stop', current_price)
-
-        # Fallback calculation if targets not provided
-        if tp == current_price and sl == current_price:
-            if signal in ['BUY', 'STRONG_BUY']:
-                tp = round(current_price * 1.015, 5)  # 1.5% TP
-                sl = round(current_price * 0.992, 5)  # 0.8% SL
-            elif signal in ['SELL', 'STRONG_SELL']:
-                tp = round(current_price * 0.985, 5)  # 1.5% TP
-                sl = round(current_price * 1.008, 5)  # 0.8% SL
+        if analysis and analysis.get('success'):
+            # Clean the response text
+            clean_text = self.clean_gpt_response(analysis.get('reason', ''))
+            await update.message.reply_text(clean_text)
         else:
-            tp = current_price
-            sl = current_price
-
-        # Format values properly
-        if pair.startswith('XAU'):
-            price_str = f"{current_price:.2f}"
-            tp_str = f"{tp:.2f}"
-            sl_str = f"{sl:.2f}"
-            ma_short_str = f"{analysis['ma_short']:.2f}"
-            ma_long_str = f"{analysis['ma_long']:.2f}"
-        else:
-            price_str = f"{current_price:.5f}"
-            tp_str = f"{tp:.5f}"
-            sl_str = f"{sl:.5f}"
-            ma_short_str = f"{analysis['ma_short']:.5f}"
-            ma_long_str = f"{analysis['ma_long']:.5f}"
-
-        message = f"""
-{signal_emoji.get(signal, '🟡')} <b>{pair} Professional Tahlil</b>
-
-💰 <b>Joriy narx:</b> {price_str}
-📊 <b>Signal:</b> {signal}
-📈 <b>Ishonch:</b> {analysis['confidence']}%
-
-🎯 <b>Take Profit:</b> {tp_str}
-⛔ <b>Stop Loss:</b> {sl_str}
-
-📝 <b>Professional Bozor Tahlili:</b>
-{analysis['reasoning'][:1000]}...
-
-⏰ <b>Vaqt:</b> {datetime.now().strftime('%H:%M:%S')}
-
-⚠️ <b>Eslatma:</b> Haqiqiy bozor ma'lumotlari asosida tahlil. Trading xavfli!
-        """
-
-        await update.message.reply_text(message, parse_mode='HTML')
+            await update.message.reply_text(f"❌ {pair} uchun tahlil xatosi yuz berdi.")
 
     async def market_analysis(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Umumiy bozor tahlili"""
