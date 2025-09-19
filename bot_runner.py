@@ -87,4 +87,4 @@ if __name__ == '__main__':
     time.sleep(2)
 
     logger.info("🚀 Starting simple trading bot...")
-    main()
+    asyncio.run(main())

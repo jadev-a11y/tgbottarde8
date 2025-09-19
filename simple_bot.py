@@ -500,7 +500,7 @@ MAKSIMAL BATAFSIL VA PROFESSIONAL JAVOB BERING! Barcha web search natijalarini i
             "Iltimos, menyudan tanlang yoki /help buyrug'ini kiriting."
         )
 
-def main():
+async def main():
     """Botni ishga tushirish"""
     # Bot tokenini ENV dan olish
     token = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -520,7 +520,22 @@ def main():
     logger.info("🤖 Simple Trading Bot started!")
     logger.info(f"Bot token: {token[:20]}...")
     logger.info(f"OpenAI key available: {bool(os.getenv('OPENAI_API_KEY'))}")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+
+    # Initialize and start the application
+    await application.initialize()
+    await application.start()
+    await application.updater.start_polling()
+
+    # Keep the bot running
+    try:
+        while True:
+            await asyncio.sleep(1)
+    except KeyboardInterrupt:
+        logger.info("Bot stopped by user")
+    finally:
+        await application.updater.stop()
+        await application.stop()
+        await application.shutdown()
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
