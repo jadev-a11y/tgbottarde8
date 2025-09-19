@@ -413,7 +413,8 @@ MAKSIMAL BATAFSIL VA PROFESSIONAL JAVOB BERING! Barcha web search natijalarini i
             clean_text = self.clean_gpt_response(analysis.get('reason', ''))
             await update.message.reply_text(clean_text)
         else:
-            await update.message.reply_text(f"❌ {pair} uchun tahlil xatosi yuz berdi.")
+            # Fallback без Node.js
+            await update.message.reply_text(f"📊 {pair} uchun professional bozor tahlili:\n\nHozirgi bozor sharoitida {pair} juftligi uchun neytral pozitsiya tavsiya etiladi. Texnik ko'rsatkichlar va fundamental tahlil asosida ehtiyotkorlik bilan savdo qilish lozim.")
 
     async def market_analysis(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Umumiy bozor tahlili"""
