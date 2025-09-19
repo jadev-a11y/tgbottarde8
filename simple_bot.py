@@ -95,7 +95,7 @@ analyzeSymbol('{pair}').then(result => {{
 
             result = subprocess.run(
                 cmd,
-                cwd='/Users/jasur/Desktop/tradingbot/telegram_bot',
+                cwd='.',
                 capture_output=True,
                 text=True,
                 env=env,

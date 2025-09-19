@@ -32,21 +32,21 @@ async def clear_telegram_session():
             except:
                 logger.info("🗑️ Webhook clear: skipped")
 
-            # Очистка updates с несколькими попытками
+            # Агрессивная очистка updates
             clear_url = f"https://api.telegram.org/bot{token}/getUpdates"
-            for attempt in range(2):  # Максимум 2 попытки
+            for attempt in range(5):  # Больше попыток
                 try:
-                    params = {"timeout": 0, "limit": 100}
+                    params = {"timeout": 0, "limit": 100, "offset": -1}  # Очистить все
                     async with session.post(clear_url, params=params) as response:
                         if response.status == 200:
                             data = await response.json()
                             if data.get('result') and len(data['result']) > 0:
-                                # Offset к последнему update
+                                # Offset к последнему update + много
                                 last_id = max([u['update_id'] for u in data['result']])
-                                offset_params = {"offset": last_id + 1, "timeout": 0}
+                                offset_params = {"offset": last_id + 100, "timeout": 0}
                                 async with session.post(clear_url, params=offset_params):
                                     pass
-                                logger.info(f"✅ Cleared {len(data['result'])} updates")
+                                logger.info(f"✅ Force cleared {len(data['result'])} updates")
                             else:
                                 logger.info("✅ No pending updates")
                             break
@@ -54,8 +54,7 @@ async def clear_telegram_session():
                             logger.warning(f"⚠️ Attempt {attempt + 1}: {response.status}")
                 except Exception as e:
                     logger.warning(f"⚠️ Attempt {attempt + 1} failed: {e}")
-                    if attempt == 0:
-                        await asyncio.sleep(0.5)  # Короткая пауза между попытками
+                    await asyncio.sleep(1)  # Пауза между попытками
 
     except Exception as e:
         logger.warning(f"⚠️ Session clear warning (continuing): {e}")
