@@ -1158,7 +1158,7 @@ Savdo signallari xizmatiga xush kelibsiz!
     async def get_enhanced_market_data(self, symbol: str):
         """Get REAL-TIME forex market data from multiple sources"""
         try:
-            import yfinance as yf
+            # import yfinance as yf  # Заменено на requests для Python 3.13
             import requests
             from datetime import datetime, timedelta
             # import numpy as np  # Removed for Python 3.13 compatibility
@@ -1296,7 +1296,7 @@ Savdo signallari xizmatiga xush kelibsiz!
             }
 
             yf_symbol = symbol_map.get(symbol_clean, f"{symbol_clean}=X")
-            ticker = yf.Ticker(yf_symbol)
+            # ticker = yf.Ticker(yf_symbol)  # Заменено на requests API
             data = ticker.history(period="1mo", interval="1d")
 
             if not data.empty:

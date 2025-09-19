@@ -2,7 +2,7 @@
 """
 Провайдер рыночных данных с несколькими источниками для надежности
 """
-import yfinance as yf
+# import yfinance as yf  # Removed for Python 3.13 compatibility
 # import pandas as pd  # Removed for Python 3.13 compatibility
 import requests
 import json
@@ -155,13 +155,18 @@ class MarketDataProvider:
 
             for symbol in test_symbols[:3]:  # Ограничиваем до 3 попыток
                 try:
-                    ticker = yf.Ticker(symbol)
-                    data = ticker.history(period="1mo", interval="1d")
+                    # Простая альтернатива yfinance через Yahoo Finance API
+                    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
+                    response = requests.get(url, timeout=10)
+                    if response.status_code == 200:
+                        data = response.json()
+                        if 'chart' in data and data['chart']['result']:
+                            logger.info(f"Yahoo Finance API: успешно получен {symbol}")
+                            return {'success': True, 'symbol': symbol, 'data': data}
 
-                    if not data.empty and len(data) > 10:
-                        data.columns = [col.lower() for col in data.columns]
-                        logger.info(f"yfinance: успешно получен {symbol}")
-                        return data
+                except requests.RequestException:
+                    logger.debug(f"Yahoo Finance API failed for {symbol}")
+                    continue
 
                 except Exception as e:
                     logger.debug(f"yfinance failed for {symbol}: {e}")
