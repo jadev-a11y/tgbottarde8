@@ -1,13 +1,28 @@
 {
-  "name": "telegram_bot",
+  "name": "telegram-trading-bot-ts",
   "version": "1.0.0",
+  "description": "Professional Telegram Trading Bot in TypeScript",
+  "main": "dist/bot.js",
   "scripts": {
-    "build": "npm install",
-    "start": "python3 bot_runner.py"
+    "build": "tsc",
+    "start": "node dist/bot.js",
+    "dev": "ts-node src/bot.ts",
+    "clean": "rm -rf dist"
   },
+  "keywords": ["telegram", "bot", "trading", "forex", "typescript"],
+  "author": "Trading Bot Team",
+  "license": "MIT",
   "dependencies": {
-    "dotenv": "^17.2.2",
-    "node-fetch": "^3.3.2",
-    "openai": "^5.22.0"
+    "node-telegram-bot-api": "^0.66.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/node-telegram-bot-api": "^0.64.0",
+    "@types/node-cron": "^3.0.11",
+    "typescript": "^5.3.0",
+    "ts-node": "^10.9.0"
   }
 }
