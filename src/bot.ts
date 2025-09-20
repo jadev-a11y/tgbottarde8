@@ -96,29 +96,34 @@ class TradingBot {
     const chatId = msg.chat.id;
 
     try {
-      // Show loading message
-      const loadingMsg = await this.bot.sendMessage(chatId, '🔄 Signal tayyorlanmoqda, iltimos kutib turing...');
+      // Show currency pair selection
+      const pairSelectionMessage = '💱 Qaysi valyuta juftligidan signal olishni xohlaysiz?\n\nIltimos, quyidagi variantlardan birini tanlang:';
 
-      // Generate signal
-      const signal = await this.tradingService.getRandomSignal();
-      const signalMessage = this.tradingService.formatSignalMessage(signal);
-
-      // Delete loading message
-      await this.bot.deleteMessage(chatId, loadingMsg.message_id);
-
-      // Send signal with inline keyboard
-      const inlineKeyboard = {
+      const pairKeyboard = {
         inline_keyboard: [
           [
-            { text: '🔄 Yangi Signal', callback_data: 'new_signal' },
-            { text: '📰 Yangiliklar', callback_data: 'news' }
+            { text: '💵 EUR/USD', callback_data: 'signal_EURUSD' },
+            { text: '💷 GBP/USD', callback_data: 'signal_GBPUSD' },
+            { text: '💴 USD/JPY', callback_data: 'signal_USDJPY' }
+          ],
+          [
+            { text: '🥇 XAU/USD (Oltin)', callback_data: 'signal_XAUUSD' },
+            { text: '🛢️ XTI/USD (Neft)', callback_data: 'signal_XTIUSD' },
+            { text: '₿ BTC/USD', callback_data: 'signal_BTCUSD' }
+          ],
+          [
+            { text: '🇦🇺 AUD/USD', callback_data: 'signal_AUDUSD' },
+            { text: '🇨🇦 USD/CAD', callback_data: 'signal_USDCAD' },
+            { text: '🇨🇭 USD/CHF', callback_data: 'signal_USDCHF' }
+          ],
+          [
+            { text: '🎲 Tasodifiy Signal', callback_data: 'signal_random' }
           ]
         ]
       };
 
-      await this.bot.sendMessage(chatId, signalMessage, {
-        parse_mode: 'Markdown',
-        reply_markup: inlineKeyboard
+      await this.bot.sendMessage(chatId, pairSelectionMessage, {
+        reply_markup: pairKeyboard
       });
 
       // Update user activity
@@ -177,57 +182,68 @@ class TradingBot {
     try {
       await this.bot.answerCallbackQuery(query.id);
 
-      switch (callbackData) {
-        case 'new_signal':
-          // Show loading
-          const loadingMsg = await this.bot.sendMessage(chatId, '🔄 Yangi signal tayyorlanmoqda...');
-
-          const signal = await this.tradingService.getRandomSignal();
-          const signalMessage = this.tradingService.formatSignalMessage(signal);
-
-          await this.bot.deleteMessage(chatId, loadingMsg.message_id);
-
-          const signalKeyboard = {
-            inline_keyboard: [
-              [
-                { text: '🔄 Yangi Signal', callback_data: 'new_signal' },
-                { text: '📰 Yangiliklar', callback_data: 'news' }
+      // Handle signal generation for specific pairs
+      if (callbackData?.startsWith('signal_')) {
+        await this.handleSignalGeneration(chatId, callbackData);
+      } else {
+        switch (callbackData) {
+          case 'new_signal':
+            // Show pair selection again
+            const pairKeyboard = {
+              inline_keyboard: [
+                [
+                  { text: '💵 EUR/USD', callback_data: 'signal_EURUSD' },
+                  { text: '💷 GBP/USD', callback_data: 'signal_GBPUSD' },
+                  { text: '💴 USD/JPY', callback_data: 'signal_USDJPY' }
+                ],
+                [
+                  { text: '🥇 XAU/USD (Oltin)', callback_data: 'signal_XAUUSD' },
+                  { text: '🛢️ XTI/USD (Neft)', callback_data: 'signal_XTIUSD' },
+                  { text: '₿ BTC/USD', callback_data: 'signal_BTCUSD' }
+                ],
+                [
+                  { text: '🇦🇺 AUD/USD', callback_data: 'signal_AUDUSD' },
+                  { text: '🇨🇦 USD/CAD', callback_data: 'signal_USDCAD' },
+                  { text: '🇨🇭 USD/CHF', callback_data: 'signal_USDCHF' }
+                ],
+                [
+                  { text: '🎲 Tasodifiy Signal', callback_data: 'signal_random' }
+                ]
               ]
-            ]
-          };
+            };
 
-          await this.bot.sendMessage(chatId, signalMessage, {
-            parse_mode: 'Markdown',
-            reply_markup: signalKeyboard
-          });
-          break;
+            await this.bot.sendMessage(chatId, '💱 Qaysi valyuta juftligidan signal olishni xohlaysiz?', {
+              reply_markup: pairKeyboard
+            });
+            break;
 
-        case 'news':
-        case 'refresh_news':
-          const newsLoadingMsg = await this.bot.sendMessage(chatId, '📰 Yangiliklar yangilanmoqda...');
+          case 'news':
+          case 'refresh_news':
+            const newsLoadingMsg = await this.bot.sendMessage(chatId, '📰 Yangiliklar yangilanmoqda...');
 
-          const news = await this.newsService.getTopNews(5);
-          const newsMessage = this.newsService.formatNewsMessage(news);
+            const news = await this.newsService.getTopNews(5);
+            const newsMessage = this.newsService.formatNewsMessage(news);
 
-          await this.bot.deleteMessage(chatId, newsLoadingMsg.message_id);
+            await this.bot.deleteMessage(chatId, newsLoadingMsg.message_id);
 
-          const newsKeyboard = {
-            inline_keyboard: [
-              [
-                { text: '🔄 Yangilash', callback_data: 'refresh_news' },
-                { text: '📊 Signal Olish', callback_data: 'new_signal' }
+            const newsKeyboard = {
+              inline_keyboard: [
+                [
+                  { text: '🔄 Yangilash', callback_data: 'refresh_news' },
+                  { text: '📊 Signal Olish', callback_data: 'new_signal' }
+                ]
               ]
-            ]
-          };
+            };
 
-          await this.bot.sendMessage(chatId, newsMessage, {
-            parse_mode: 'Markdown',
-            reply_markup: newsKeyboard
-          });
-          break;
+            await this.bot.sendMessage(chatId, newsMessage, {
+              parse_mode: 'Markdown',
+              reply_markup: newsKeyboard
+            });
+            break;
 
-        default:
-          await this.bot.sendMessage(chatId, '❌ Noto\'g\'ri buyruq.');
+          default:
+            await this.bot.sendMessage(chatId, '❌ Noto\'g\'ri buyruq.');
+        }
       }
 
       this.updateUserActivity(query.from?.id);
@@ -259,6 +275,42 @@ class TradingBot {
     await this.bot.sendMessage(chatId, helpMessage, {
       parse_mode: 'Markdown'
     });
+  }
+
+  private async handleSignalGeneration(chatId: number, callbackData: string): Promise<void> {
+    try {
+      const loadingMsg = await this.bot.sendMessage(chatId, '🔄 Signal tayyorlanmoqda, iltimos kutib turing...');
+
+      let signal;
+      if (callbackData === 'signal_random') {
+        signal = await this.tradingService.getRandomSignal();
+      } else {
+        const symbol = callbackData.replace('signal_', '');
+        signal = await this.tradingService.generateSignal(symbol);
+      }
+
+      const signalMessage = this.tradingService.formatSignalMessage(signal);
+
+      await this.bot.deleteMessage(chatId, loadingMsg.message_id);
+
+      const signalKeyboard = {
+        inline_keyboard: [
+          [
+            { text: '🔄 Yangi Signal', callback_data: 'new_signal' },
+            { text: '📰 Yangiliklar', callback_data: 'news' }
+          ]
+        ]
+      };
+
+      await this.bot.sendMessage(chatId, signalMessage, {
+        parse_mode: 'Markdown',
+        reply_markup: signalKeyboard
+      });
+
+    } catch (error) {
+      console.error('Signal generatsiya xatosi:', error);
+      await this.bot.sendMessage(chatId, '❌ Signal olishda xatolik yuz berdi. Iltimos, qaytadan urinib ko\'ring.');
+    }
   }
 
   private updateUserActivity(userId?: number): void {
