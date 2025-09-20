@@ -34,6 +34,7 @@ export interface UserSession {
   firstName?: string;
   lastActivity: Date;
   preferredPairs: string[];
+  currentState?: 'waiting_for_pair_input' | 'idle';
 }
 
 export interface BotConfig {

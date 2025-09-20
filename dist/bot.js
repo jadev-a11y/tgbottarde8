@@ -45,7 +45,8 @@ class TradingBot {
             username: user.username,
             firstName: user.first_name,
             lastActivity: new Date(),
-            preferredPairs: []
+            preferredPairs: [],
+            currentState: 'idle'
         });
         const welcomeMessage = `Assalomu alaykum, hurmatli ${user.first_name || 'Foydalanuvchi'}! 👋\n\n` +
             `🤖 *Professional Trading Bot*ga xush kelibsiz!\n\n` +
@@ -90,7 +91,7 @@ class TradingBot {
                         { text: '🇨🇭 USD/CHF', callback_data: 'signal_USDCHF' }
                     ],
                     [
-                        { text: '🎲 Tasodifiy Signal', callback_data: 'signal_random' }
+                        { text: '✍️ Boshqa Juftlik Kiritish', callback_data: 'manual_input' }
                     ]
                 ]
             };
@@ -161,7 +162,7 @@ class TradingBot {
                                     { text: '🇨🇭 USD/CHF', callback_data: 'signal_USDCHF' }
                                 ],
                                 [
-                                    { text: '🎲 Tasodifiy Signal', callback_data: 'signal_random' }
+                                    { text: '✍️ Boshqa Juftlik Kiritish', callback_data: 'manual_input' }
                                 ]
                             ]
                         };
@@ -188,6 +189,9 @@ class TradingBot {
                             reply_markup: newsKeyboard
                         });
                         break;
+                    case 'manual_input':
+                        await this.handleManualInput(chatId, query.from?.id);
+                        break;
                     default:
                         await this.bot.sendMessage(chatId, '❌ Noto\'g\'ri buyruq.');
                 }
@@ -202,6 +206,18 @@ class TradingBot {
     async handleMessage(msg) {
         const chatId = msg.chat.id;
         const text = msg.text;
+        if (text === '/cancel') {
+            await this.handleCancel(msg);
+            return;
+        }
+        const userId = msg.from?.id;
+        if (userId) {
+            const session = this.userSessions.get(userId);
+            if (session?.currentState === 'waiting_for_pair_input') {
+                await this.handlePairInput(msg, text);
+                return;
+            }
+        }
         if (!text || text.startsWith('/') ||
             text.includes('Signal Olish') ||
             text.includes('Yangiliklar')) {
@@ -218,15 +234,22 @@ class TradingBot {
     }
     async handleSignalGeneration(chatId, callbackData) {
         try {
-            const loadingMsg = await this.bot.sendMessage(chatId, '🔄 Signal tayyorlanmoqda, iltimos kutib turing...');
-            let signal;
-            if (callbackData === 'signal_random') {
-                signal = await this.tradingService.getRandomSignal();
+            const progressMessages = [
+                '🔄 Bozor ma\'lumotlari yuklanmoqda...',
+                '📈 Texnik tahlil o\'tkazilmoqda...',
+                '🧠 AI strategiyalar baholanmoqda...',
+                '⚙️ Signal shakllantirilyapti...'
+            ];
+            const loadingMsg = await this.bot.sendMessage(chatId, progressMessages[0]);
+            for (let i = 1; i < progressMessages.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, 800));
+                await this.bot.editMessageText(progressMessages[i], {
+                    chat_id: chatId,
+                    message_id: loadingMsg.message_id
+                });
             }
-            else {
-                const symbol = callbackData.replace('signal_', '');
-                signal = await this.tradingService.generateSignal(symbol);
-            }
+            const symbol = callbackData.replace('signal_', '');
+            const signal = await this.tradingService.generateSignal(symbol);
             const signalMessage = this.tradingService.formatSignalMessage(signal);
             await this.bot.deleteMessage(chatId, loadingMsg.message_id);
             const signalKeyboard = {
@@ -245,6 +268,89 @@ class TradingBot {
         catch (error) {
             console.error('Signal generatsiya xatosi:', error);
             await this.bot.sendMessage(chatId, '❌ Signal olishda xatolik yuz berdi. Iltimos, qaytadan urinib ko\'ring.');
+        }
+    }
+    async handleManualInput(chatId, userId) {
+        if (!userId)
+            return;
+        const session = this.userSessions.get(userId);
+        if (session) {
+            session.currentState = 'waiting_for_pair_input';
+            this.userSessions.set(userId, session);
+        }
+        const inputMessage = '✍️ Iltimos, valyuta juftligini kiriting\n\n' +
+            '📝 *Misol:* EURUSD, GBPJPY, XAUUSD\n' +
+            '📍 *Format:* XXXYYY (probelsiz)\n\n' +
+            '❌ Bekor qilish uchun /cancel buyrug\'ini yuboring';
+        await this.bot.sendMessage(chatId, inputMessage, {
+            parse_mode: 'Markdown',
+            reply_markup: {
+                force_reply: true,
+                selective: true
+            }
+        });
+    }
+    async handleCancel(msg) {
+        const chatId = msg.chat.id;
+        const userId = msg.from?.id;
+        if (userId) {
+            const session = this.userSessions.get(userId);
+            if (session) {
+                session.currentState = 'idle';
+                this.userSessions.set(userId, session);
+            }
+        }
+        await this.bot.sendMessage(chatId, '✅ Amal bekor qilindi. Asosiy menyuga qaytdingiz.');
+    }
+    async handlePairInput(msg, pairText) {
+        const chatId = msg.chat.id;
+        const userId = msg.from?.id;
+        if (!userId)
+            return;
+        const session = this.userSessions.get(userId);
+        if (session) {
+            session.currentState = 'idle';
+            this.userSessions.set(userId, session);
+        }
+        const cleanPair = pairText.toUpperCase().replace(/[^A-Z]/g, '');
+        if (cleanPair.length < 6 || cleanPair.length > 8) {
+            await this.bot.sendMessage(chatId, '❌ Noto\'g\'ri format. Iltimos, 6-8 harfli valyuta juftligini kiriting (masalan: EURUSD)');
+            return;
+        }
+        try {
+            const progressMessages = [
+                `🔄 ${cleanPair} uchun ma\'lumotlar izlanmoqda...`,
+                `📈 ${cleanPair} texnik tahlil qilinmoqda...`,
+                `🧠 ${cleanPair} uchun AI strategiya ishlanmoqda...`,
+                `⚙️ ${cleanPair} signal tayyorlanmoqda...`
+            ];
+            const loadingMsg = await this.bot.sendMessage(chatId, progressMessages[0]);
+            for (let i = 1; i < progressMessages.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, 800));
+                await this.bot.editMessageText(progressMessages[i], {
+                    chat_id: chatId,
+                    message_id: loadingMsg.message_id
+                });
+            }
+            const signal = await this.tradingService.generateSignal(cleanPair);
+            const signalMessage = this.tradingService.formatSignalMessage(signal);
+            await this.bot.deleteMessage(chatId, loadingMsg.message_id);
+            const signalKeyboard = {
+                inline_keyboard: [
+                    [
+                        { text: '🔄 Yangi Signal', callback_data: 'new_signal' },
+                        { text: '📰 Yangiliklar', callback_data: 'news' }
+                    ]
+                ]
+            };
+            await this.bot.sendMessage(chatId, signalMessage, {
+                parse_mode: 'Markdown',
+                reply_markup: signalKeyboard
+            });
+        }
+        catch (error) {
+            console.error('Manual pair signal error:', error);
+            await this.bot.sendMessage(chatId, `❌ ${cleanPair} uchun signal olishda xatolik yuz berdi. Iltimos, boshqa juftlik bilan urinib ko\'ring.`);
         }
     }
     updateUserActivity(userId) {
