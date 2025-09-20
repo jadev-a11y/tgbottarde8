@@ -157,7 +157,7 @@ export class TradingService {
       'Price Action': 'Narx harakati tahlili asosida'
     };
 
-    return `${selectedReason}. ${strategyDetails[strategy]}.`;
+    return `${selectedReason}. ${strategyDetails[strategy] || 'Texnik tahlil asosida'}.`;
   }
 
   private calculateLevels(currentPrice: number, direction: 'BUY' | 'SELL' | 'HOLD'): { targetPrice?: number; stopLoss?: number } {
